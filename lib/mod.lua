@@ -1,5 +1,5 @@
 -- mxsynths lite - nb edition v0.1 @sonoCircuit
--- big thanks to @inifintedigites for mx synths!
+-- big thanks to @infinitedigits for mx synths!
 
 local tx = require 'textentry'
 local mu = require 'musicutil'
