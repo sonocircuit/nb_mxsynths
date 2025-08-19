@@ -1,5 +1,5 @@
 // mx synths - nb editon v.0.1 @sonoCircuit
-// synthdefs taken from mx_synths @inifinitedigits
+// synthdefs ported and adapted from mx_synths @inifinitedigits
 
 NB_mxSynths {
 
