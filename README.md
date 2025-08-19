@@ -1,2 +1,2 @@
-# nb_mxsamples
-mx samples as an nb voice
+# nb_mxsynths
+mx synths as an nb voice
