@@ -11,6 +11,8 @@ NB_mxSynths {
 		synthParams = Dictionary.newFrom([
 			\amp, 0.8,
 			\pan, 0,
+			\sendA, 0,
+			\sendB, 0,
 			\sub, 0,
 			\mod1, 0,
 			\mod2, 0,
@@ -20,8 +22,13 @@ NB_mxSynths {
 			\decay, 0.6,
 			\sustain, 0.4,
 			\release, 2.2,
-			\sendA, 0,
-			\sendB, 0
+			\mod1Mod, 0,
+			\mod2Mod, 0,
+			\mod3Mod, 0,
+			\mod4Mod, 0,
+			\modDepth, 0,
+			\bndAmt, 0,
+			\bndDepth, 0
 		]);
 
 		StartUp.add {
@@ -30,26 +37,33 @@ NB_mxSynths {
 
 			s.waitForBoot {
 
-				// make groups
 				synthGroup = Group.new(s);
-				synthVoices = Array.fill(numVoices, { Group.new(synthGroup) });
+				synthVoices = Array.fill(numVoices, {Group.new(synthGroup)});
 
 
-				// add synthdefs
 				SynthDef(\mx_synthy, {
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+					var env, stereo, lowcut, res, detune, snd;
 
-					var stereo = LinLin.kr(Lag.kr(mod1), -1, 1, 0, 1);
-					var lowcut = LinExp.kr(Lag.kr(mod2), -1, 1, 40, 11000);
-					var res = LinExp.kr(Lag.kr(mod3), -1, 1, 1.8, 0.2);
-					var detune = LinExp.kr(Lag.kr(mod4), -1, 1, 0.0001, 0.3);
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
-					var snd = Pan2.ar(Pulse.ar(hz/2, LinLin.kr(LFTri.kr(0.5), -1, 1, 0.2, 0.8)) * Lag.kr(sub, 1));
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+					env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+
+					stereo = LinLin.kr(mod1, -1, 1, 0, 1);
+					lowcut = LinExp.kr(mod2, -1, 1, 40, 11000);
+					res = LinExp.kr(mod3, -1, 1, 1.8, 0.2);
+					detune = LinExp.kr(mod4, -1, 1, 0.0001, 0.3);
+
+					snd = Pan2.ar(Pulse.ar(hz/2, LinLin.kr(LFTri.kr(0.5), -1, 1, 0.2, 0.8)) * Lag.kr(sub, 1));
 					snd = snd + Mix.ar({
 						arg i;
 						var snd2;
@@ -70,19 +84,26 @@ NB_mxSynths {
 
 				SynthDef(\mx_icarus,{
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
 					var bass, basshz, feedback = 0.5, delaytime = 0.25;
 					var ender, snd, local, in, ampcheck, env, detuning = 0.1, pwmcenter = 0.5, pwmwidth = 0.4, pwmfreq = 1.5;
 
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 					env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
-					feedback = LinLin.kr(Lag.kr(mod1), -1, 1, 0.1, 2);
-					delaytime = LinLin.kr(Lag.kr(mod2), -1, 1, 0.05, 0.6);
-					pwmwidth = LinLin.kr(Lag.kr(mod3), -1, 1, 0.1, 0.9);
-					detuning = LinExp.kr(Lag.kr(mod4), -1, 1, 0.01, 1);
+					feedback = LinLin.kr(mod1, -1, 1, 0.1, 2);
+					delaytime = LinLin.kr(mod2, -1, 1, 0.05, 0.6);
+					pwmwidth = LinLin.kr(mod3, -1, 1, 0.1, 0.9);
+					detuning = LinExp.kr(mod4, -1, 1, 0.01, 1);
 
 					snd = Mix.new({VarSaw.ar(
 						hz + (SinOsc.kr(LFNoise0.kr(1), Rand(0,3))*
@@ -131,26 +152,34 @@ NB_mxSynths {
 
 				SynthDef(\mx_casio, {
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+					var env, artifacts, phasing, res, detuning, fq, fqRes, pdbase, pd, pdres, pdi, snd;
 
-					var artifacts = LinLin.kr(Lag.kr(mod1), -1, 1, 1, 10);
-					var phasing = LinExp.kr(Lag.kr(mod2), -1, 1, 0.125, 8);
-					var res = LinExp.kr(Lag.kr(mod3), -1, 1, 0.1, 10);
-					var detuning = LinExp.kr(Lag.kr(mod4), -1, 1, 0.000001, 0.02);
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
-					var freq = [hz * (1 - detuning), hz * (1 + detuning)];
-					var freqBase = freq;
-					var freqRes = SinOsc.kr(Rand(0.01, 0.2), 0).range(freqBase/2, freqBase*2) * res;
-					var pdbase = Impulse.ar(freqBase);
-					var pd = Phasor.ar(pdbase, 2 * pi * freqBase / 48000 * phasing, 0, 2pi);
-					var pdres = Phasor.ar(pdbase, 2 * pi * freqRes / 48000 * phasing, 0, 2pi);
-					var pdi = LinLin.ar((2pi - pd).max(0), 0, 2pi, 0, 1);
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+					env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
-					var snd = Lag.ar(SinOsc.ar(0, pdres) * pdi, 1 / freqBase);
+					artifacts = LinLin.kr(mod1, -1, 1, 1, 10);
+					phasing = LinExp.kr(mod2, -1, 1, 0.125, 8);
+					res = LinExp.kr(mod3, -1, 1, 0.1, 10);
+					detuning = LinExp.kr(mod4, -1, 1, 0.000001, 0.02);
+
+					fq = [hz * (1 - detuning), hz * (1 + detuning)];
+					fqRes = SinOsc.kr(Rand(0.01, 0.2), 0).range(fq/2, fq*2) * res;
+					pdbase = Impulse.ar(fq);
+					pd = Phasor.ar(pdbase, 2 * pi * fq / 48000 * phasing, 0, 2pi);
+					pdres = Phasor.ar(pdbase, 2 * pi * fqRes / 48000 * phasing, 0, 2pi);
+					pdi = LinLin.ar((2pi - pd).max(0), 0, 2pi, 0, 1);
+
+					snd = Lag.ar(SinOsc.ar(0, pdres) * pdi, 1 / fq);
 					snd = LPF.ar(snd, Clip.kr(hz * artifacts, 20, 18000));
 					snd = Pan2.ar(snd, Lag.kr(pan, 0.1));
 					snd = snd * env * amp * vel * -9.dbamp;
@@ -160,20 +189,28 @@ NB_mxSynths {
 					Out.ar(sendBBus, sendB * snd);
 				}).add;
 
+
 				SynthDef(\mx_malone,{
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
 					var snd, env, basshz, bass, detuning, pw, res, filt, detuningSpeed;
 
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 					env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
-					detuningSpeed = LinExp.kr(Lag.kr(mod1), -1, 1, 0.1, 10);
-					detuning = LinExp.kr(Lag.kr(mod2),-1, 1, 0.002, 0.8);
-					filt = LinLin.kr(Lag.kr(mod3), -1, 1, 2, 10);
-					res = LinExp.kr(Lag.kr(mod4), -1, 1, 4, 4, 0.2);
+					detuningSpeed = LinExp.kr(mod1, -1, 1, 0.1, 10);
+					detuning = LinExp.kr(mod2,-1, 1, 0.002, 0.8);
+					filt = LinLin.kr(mod3, -1, 1, 2, 10);
+					res = LinExp.kr(mod4, -1, 1, 0.2, 3.8);
 
 					basshz = Select.kr(hz > 90, [hz, hz/2]);
 
@@ -192,8 +229,8 @@ NB_mxSynths {
 						snd_ = snd_ + PulseDPW.ar(hz_/2, 0.17);
 						snd_ = snd_ + PulseDPW.ar(hz_*2, 0.17);
 						snd_ = snd_ + LFTri.ar(hz_/4);
-						snd_ = RLPF.ar(snd_, Clip.kr(hz_ * filt, hz_ * 1.5, 16000),
-							Clip.kr(LFTri.kr([0.5,0.45]).range(0.3,1) * res, 0.2, 2));
+						snd_ = MoogFF.ar(snd_, Clip.ar(hz_ * filt, 20, 16000),
+							Clip.ar(LFTri.kr([0.5, 0.45]).range(0.3, 1) * res, 0.2, 3.8)); // RLPF blows up when modulated at high freq!!
 						Pan2.ar(snd_ ,VarLag.kr(LFNoise0.kr(1/3), 3, warp:\sine)) / 10
 					}));
 
@@ -210,18 +247,27 @@ NB_mxSynths {
 
 				SynthDef(\mx_toshiya,{
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+					var env, detune, klankyvol, lowcut, chorus, snd;
 
-					var detune = LinExp.kr(Lag.kr(mod1), -1, 1, 0.001, 0.1);
-					var klankyvol = LinLin.kr(Lag.kr(mod2), -1, 1, 0, 2);
-					var lowcut = LinExp.kr(Lag.kr(mod3), -1, 1, 25, 11000);
-					var chorus = LinExp.kr(Lag.kr(mod4), -1, 1, 0.2, 5);
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
-					var snd = Pan2.ar(SinOsc.ar(hz/2,
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+					env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+
+					detune = LinExp.kr(Lag.kr(mod1 + (mod1Mod * modDepth)), -1, 1, 0.001, 0.1);
+					klankyvol = LinLin.kr(Lag.kr(mod2 + (mod2Mod * modDepth)), -1, 1, 0, 2);
+					lowcut = LinExp.kr(Lag.kr(mod3 + (mod3Mod * modDepth)), -1, 1, 25, 11000);
+					chorus = LinExp.kr(Lag.kr(mod4+ (mod4Mod * modDepth)), -1, 1, 0.2, 5);
+
+					snd = Pan2.ar(SinOsc.ar(hz/2,
 						LinLin.kr(LFTri.kr(0.5), -1, 1, 0.2, 0.8)) / 12 * amp, SinOsc.kr(0.1, mul:0.2)) * Lag.kr(sub, 1);
 
 					snd = snd + Mix.ar({
@@ -235,7 +281,8 @@ NB_mxSynths {
 					}!2);
 
 					snd = snd + (Amplitude.kr(snd) * VarLag.kr(LFNoise0.kr(1), 1, warp:\sine).range(0.1, 1.0) *
-						klankyvol * Klank.ar(`[[hz, hz * 2 + 2, hz*4 + 5, hz*8 + 2], nil, [1, 1, 1, 1]], PinkNoise.ar([0.007, 0.007])));
+						klankyvol * Klank.ar(`[[hz, hz * 2 + 2, hz*4 + 5, hz*8 + 2], nil, [1, 1, 1, 1]],
+							PinkNoise.ar([0.007, 0.007])));
 					snd = Balance2.ar(snd[0], snd[1], Lag.kr(pan, 0.1));
 					snd = snd * env * amp * vel * -18.dbamp;
 
@@ -244,26 +291,33 @@ NB_mxSynths {
 					Out.ar(sendBBus, sendB * snd);
 				}).add;
 
+
 				// https://github.com/catfact/zebra/blob/master/lib/Engine_DreadMoon.sc#L20-L41
 				SynthDef(\mx_piano,{
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var snd, note, env, damp = 0;
+					var snd, note, env;
 					var noise, string, delaytime, lpf, noise_env, damp_mul;
 					var noise_hz, tune_up, tune_down, string_decay, lpf_rq,
-					lpf_ratio = 2.0, hpf_hz = 40, damp_time = 0.1;
+					damp = 0, lpf_ratio = 2.0, hpf_hz = 40, damp_time = 0.1;
 
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+					hz = (hz.cpsmidi + Lag.kr(bndAmt * bndDepth)).midicps;
 					env = EnvGen.ar(Env.adsr(0.01, 0, 1, release), gate, doneAction: 2);
 
-					// mods
-					string_decay = LinLin.kr(Lag.kr(mod1), -1, 1, 0.2, 8);
-					noise_hz = LinExp.kr(Lag.kr(mod2), -1, 1, 400, 16000);
-					lpf_rq = LinLin.kr(Lag.kr(mod3), -1, 1, 4, 0.4);
-					tune_up = 1 + LinLin.kr(Lag.kr(mod4), -1, 1, 0.0001, 0.0005 * 4);
-					tune_down = 1 - LinLin.kr(Lag.kr(mod4), -1, 1, 0.00005, 0.0004 * 4);
+					string_decay = LinLin.kr(mod1, -1, 1, 0.2, 8);
+					noise_hz = LinExp.kr(mod2, -1, 1, 400, 16000);
+					lpf_rq = LinLin.kr(mod3, -1, 1, 4, 0.4);
+					tune_up = 1 + LinLin.kr(mod4, -1, 1, 0.0001, 0.0005 * 4);
+					tune_down = 1 - LinLin.kr(mod4, -1, 1, 0.00005, 0.0004 * 4);
 
 					damp_mul = LagUD.ar(K2A.ar(1.0 - damp), 0, damp_time);
 
@@ -288,27 +342,36 @@ NB_mxSynths {
 				// port of STK's Rhodey (yamaha DX7-style Fender Rhodes) https://sccode.org/1-522
 				SynthDef(\mx_epiano, {
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+					var env, mix, modIndex, lfoSpeed, lfoDepth, env1, env2, env3, osc1, osc2, osc3, osc4, snd;
 
-					var mix = LinLin.kr(Lag.kr(mod1), -1, 1, 0.0, 0.4);
-					var modIndex = LinExp.kr(Lag.kr(mod2), -1, 1, 0.01, 4);
-					var lfoSpeed = LinLin.kr(Lag.kr(mod3), -1, 1, 0, 6);
-					var lfoDepth = LinExp.kr(Lag.kr(mod4), -1, 1, 0.01, 1);
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
-					var env1 = EnvGen.ar(Env.adsr(0.001, 1.25, 0.5, release, curve: \lin),gate);
-					var env2 = EnvGen.ar(Env.adsr(0.001, 1.00, 0.5, release, curve: \lin),gate);
-					var env3 = EnvGen.ar(Env.adsr(0.001, 1.50, 0.5, release, curve: \lin),gate);
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+					env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
-					var osc4 = SinOsc.ar(hz) * 2pi * 2 * 0.535887 * modIndex * env3 * vel;
-					var osc3 = SinOsc.ar(hz/2, osc4) * env3 * vel;
-					var osc2 = SinOsc.ar(hz * 30) * 2pi * 0.05 * env2 * vel;
-					var osc1 = SinOsc.ar(hz/2, osc2) * env1 * vel;
+					mix = LinLin.kr(mod1, -1, 1, 0.0, 0.4);
+					modIndex = LinExp.kr(mod2, -1, 1, 0.01, 4);
+					lfoSpeed = LinLin.kr(mod3, -1, 1, 0, 6);
+					lfoDepth = LinExp.kr(mod4, -1, 1, 0.01, 1);
 
-					var snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
+					env1 = EnvGen.ar(Env.adsr(0.001, 1.25, 0.5, release, curve: \lin),gate);
+					env2 = EnvGen.ar(Env.adsr(0.001, 1.00, 0.5, release, curve: \lin),gate);
+					env3 = EnvGen.ar(Env.adsr(0.001, 1.50, 0.5, release, curve: \lin),gate);
+
+					osc4 = SinOsc.ar(hz) * 2pi * 2 * 0.535887 * modIndex * env3 * vel;
+					osc3 = SinOsc.ar(hz/2, osc4) * env3 * vel;
+					osc2 = SinOsc.ar(hz*30) * 2pi * 0.05 * env2 * vel;
+					osc1 = SinOsc.ar(hz/2, osc2) * env1 * vel;
+
+					snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
 					snd = snd * (SinOsc.ar(lfoSpeed) * lfoDepth + 1);
 					snd = Pan2.ar(snd, Lag.kr(pan, 0.1));
 					snd = snd * env * amp * -12.dbamp;
@@ -320,32 +383,42 @@ NB_mxSynths {
 
 
 				SynthDef(\mx_mdapiano,{
-					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var env = EnvGen.ar(Env.adsr(0.01, 0, 1.0, release), gate, doneAction: 2);
-					var tuning = LinLin.kr(Lag.kr(mod1), -1, 1, 0, 1);
-					var snd = MdaPiano.ar(
+					var env, snd;
+
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps; // cant set hz post gen in mdapiano
+
+					env = EnvGen.ar(Env.adsr(0.01, 0, 1.0, release), gate, doneAction: 2);
+					snd = MdaPiano.ar(
 						freq: hz,
 						gate: gate,
-						decay: decay,
+						decay: 1,
 						velmuff: vel,
 						release: release,
-						stereo: LinLin.kr(Lag.kr(mod2), -1, 1, 0.3, 1),
+						stereo: LinLin.kr(mod2, -1, 1, 0.3, 1),
 						vel: vel.linlin(0, 1, 0, 110) + Rand(0, 10),
-						tune: Rand(0.5 * tuning.neg, 0.5 * tuning)
+						tune: 0.5 + (Rand(-0.2, 0.2) * LinLin.kr(mod1, -1, 1, 0, 1)),
+						random: 0
 					);
 
 					snd = Vibrato.ar(
 						snd,
-						rate:LinExp.kr(Lag.kr(mod3), -1, 1, 0.01, 16),
-						depth:LinExp.kr(Lag.kr(mod4), -1, 1, 0.01, 1)
+						rate:LinExp.kr(mod3, -1, 1, 0.01, 16),
+						depth:LinExp.kr(mod4, -1, 1, 0.01, 1)
 					);
 
 					snd = Pan2.ar(snd, Lag.kr(pan, 0.1));
-					snd = snd * env * amp * vel * -9.dbamp;
+					snd = snd * env * amp * vel * -12.dbamp;
 
 					Out.ar(out, snd);
 					Out.ar(sendABus, sendA * snd);
@@ -356,26 +429,37 @@ NB_mxSynths {
 				// http://sccode.org/1-51n
 				SynthDef(\mx_kalimba,{
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
-					var env = EnvGen.ar(Env.perc(attack, decay), gate, doneAction: 2);
+					var env, osc, click, mix, snd;
 
-					var osc = HPF.ar(LPF.ar(DPW3Tri.ar(hz).tanh, 380), 60);
-					var click = DynKlank.ar(`[
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+					env = EnvGen.ar(Env.perc(attack, decay), gate, doneAction: 2);
+
+					osc = HPF.ar(LPF.ar(DPW3Tri.ar(hz).tanh, 380), 60);
+					click = DynKlank.ar(`[
 						[240 * ExpRand(0.97, 1.02), 2020 * ExpRand(0.97, 1.02), 3151 * ExpRand(0.97, 1.02)],
 						[-9, 0, -5].dbamp,
 						[0.8, 0.07, 0.08]
-					], BPF.ar(PinkNoise.ar, Rand(5500, 8500), Rand(0.05, 0.2)) * EnvGen.ar(Env.perc(0.001, 0.01)));
+					], BPF.ar(PinkNoise.ar, Rand(5500, 8500), Rand(0.05, 0.2)) * EnvGen.ar(Env.perc(0.001, 0.01, -1.dbamp)));
 
-					var mix = LinLin.kr(Lag.kr(mod1), -1, 1, 0.01, 0.4);
-					var snd = (osc * mix) + (click * (1 - mix));
+					mix = LinLin.kr(mod1, -1, 1, 0.01, 0.4);
+					snd = (osc * mix) + (click * (1 - mix));
 
-					snd = Splay.ar(snd, center:Rand(-1, 1) * LinLin.kr(Lag.kr(mod2), -1, 1, 0, 1));
-					snd = Vibrato.ar(snd, LinExp.kr(Lag.kr(mod3), -1, 1, 0.01, 16), LinExp.kr(Lag.kr(mod4), -1, 1, 0.01, 1));
+					snd = Splay.ar(snd, center:Rand(-1, 1) * LinLin.kr(mod2, -1, 1, 0, 1));
+					snd = Vibrato.ar(snd,
+						LinExp.kr(mod3, -1, 1, 0.01, 16),
+						LinExp.kr(mod4, -1, 1, 0.01, 1));
 					snd = Balance2.ar(snd[0], snd[1], Lag.kr(pan, 0.1));
-					snd = snd * env * amp * vel;
+					snd = snd * env * amp * vel * 2.dbamp;
 
 					Out.ar(out, snd);
 					Out.ar(sendABus, sendA * snd);
@@ -383,12 +467,12 @@ NB_mxSynths {
 				}).add;
 
 
-
 				SynthDef(\mx_aaaaaa,{
-					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
 					var saw, wiggle, snd, env;
 					// frequencies drawn from https://slideplayer.com/slide/15020921/
@@ -409,7 +493,13 @@ NB_mxSynths {
 					var q1, q2, q3, q4;
 					var voice, vowel, tilt, cons, detune, focus, div, reso;
 
-					mod1 = Lag.kr(mod1); mod2 = Lag.kr(mod2); mod3 = Lag.kr(mod3); mod4 = Lag.kr(mod4);
+					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+					env = EnvGen.ar(Env.adsr(attack,decay,sustain,release), gate, doneAction: 2);
+
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
 					voice = Select.kr( (mod1 > -0.99), [hz.explin(100, 1000, 0, 2), LinLin.kr(mod1, -1, 1, 0, 2)]);
 					vowel = LinLin.kr(mod2, -1, 1, 0, 7);
@@ -432,8 +522,6 @@ NB_mxSynths {
 					q2 = q1/1.5;
 					q3 = q2/1.5;
 					q4 = reso/10;
-
-					env = EnvGen.ar(Env.adsr(attack,decay,sustain,release), gate, doneAction: 2);
 
 					saw = VarSaw.ar(hz * (1 + (detune * [-1, 0.7, -0.3, 0, 0.3, -0.7, 1])), width: 0).collect({ |item, index|
 						Pan2.ar(item, index.linlin(0, 6, -1, 1) * SinOsc.kr(Rand.new(0.1, 0.3)) * focus)
@@ -461,18 +549,23 @@ NB_mxSynths {
 
 				SynthDef(\mx_triangles,{
 					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-					hz = 220, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
-					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0;
+					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
+					mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
 
 					var snd, env, bellow_env, bellow,
 					detune_cents, detune_semitones,
 					f_cents, freq_a, freq_b, decimation_bits, decimation_rate,
 					noise_level, vibrato_rate, vibrato_depth;
 
+					hz = (hz.cpsmidi + Lag.kr(bndAmt * bndDepth)).midicps;
 					env = EnvGen.ar(Env.adsr(attack + 0.05, decay, sustain, release), gate, doneAction: 2);
 
-					mod1 = Lag.kr(mod1); mod2 = Lag.kr(mod2); mod3 = Lag.kr(mod3); mod4 = Lag.kr(mod4);
+					mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+					mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
 					bellow = LinLin.kr(mod1, -1, 1, 0, 1);
 					decimation_bits = LinLin.kr(mod2, -1, 1, 24, 4);
@@ -505,7 +598,6 @@ NB_mxSynths {
 				}).add;
 
 
-				// add OSC msg
 				OSCFunc.new({ |msg, time, addr, recvPort|
 					var synDef = msg[1].asSymbol;
 					var i = msg[2].asInteger;
