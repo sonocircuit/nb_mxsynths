@@ -7,8 +7,8 @@ local md = require 'core/mods'
 local vx = require 'voice'
 
 local preset_path = "/home/we/dust/data/nb_mxsynths/mxsynth_patches"
-local default_patch = "/home/we/dust/data/nb_mxsynths/mxsynth_patches/synthy.patch"
-local failsafe_patch = "/home/we/dust/code/nb_mxsynths/data/mxsynth_patches/synthy.patch"
+local default_patch = "/home/we/dust/data/nb_mxsynths/mxsynth_patches/epiano.patch"
+local failsafe_patch = "/home/we/dust/code/nb_mxsynths/data/mxsynth_patches/epiano.patch"
 local current_patch = ""
 
 local NUM_VOICES = 6
@@ -17,8 +17,10 @@ local synthmodels = {"synthy", "icarus", "casio", "malone", "toshiya", "piano", 
 local synthdef = "mx_synthy"
 
 local p = {
-  amp = 0.8, pan = 0, send_a = 0, send_b = 0, model = "mx_synthy", sub = 0,
+  amp = 0.8, pan = 0, send_a = 0, send_b = 0,
+  model = "mx_synthy", sub = 0, pitchbend = 7,
   mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0,
+  modmod1 = 0, modmod2 = 0, modmod3 = 0, modmod4 = 0,
   attack = 0.01, decay = 0.6, sustain = 0.4, release = 2.2
 }
 
@@ -43,7 +45,7 @@ local function save_synth_patch(txt)
     tab.save(patch, preset_path.."/"..txt..".patch")
     current_patch = txt
     params:set("nb_mxsynths_load_patch", preset_path.."/"..txt..".patch", true)
-    print("saved patch : "..txt)
+    print("saved mxsynth: "..txt)
   end
 end
 
@@ -58,7 +60,7 @@ local function load_synth_patch(path)
         end
         local name = path:match("[^/]*$")
         current_patch = name:gsub(".patch", "")
-        print("loaded patch : "..name)
+        print("loaded mxsynth: "..current_patch)
       else
         if util.file_exists(failsafe_patch) then
           load_synth_patch(failsafe_patch)
@@ -150,7 +152,7 @@ local modparams = {
       function(param) return round_form(util.linexp(-1, 1, 0.01, 16, param:get()), 0.01, " hz") end,
       function(param) return round_form(util.linlin(-1, 1, 0.01, 1, param:get()) * 100, 1, "%") end
     },
-    hide = {"sub", "attack", "sustain"}
+    hide = {"sub", "attack", "decay", "sustain"}
   },
   piano = {
     name = {"string decay", "noise freq", "resonance", "detune"},
@@ -173,7 +175,7 @@ local modparams = {
     hide = {"sub"}
   },
   triangles = {
-    name = {"bellow", "decimation", "tune voice", "vibrato"},
+    name = {"bellow", "decimation", "tune 2nd", "vibrato"},
     formatter = {
       function(param) return round_form(util.linlin(-1, 1, 0, 1, param:get()) * 100, 1, "%") end,
       function(param) return round_form(util.linlin(-1, 1, 0, 1, param:get()) * 100, 1, "%") end,
@@ -192,6 +194,9 @@ local function set_modparams(idx)
     p.name = s.name[i]
     p.formatter = s.formatter[i]
     p:bang()
+    local m = params:lookup_param("nb_mxsynths_modmod"..i)
+    m.name = s.name[i]
+    m:bang()
   end
   -- hide n seek
   params:show("nb_mxsynths_sub")
@@ -207,8 +212,18 @@ local function set_modparams(idx)
   _menu.rebuild_params()
 end
 
+local function pan_display(param)
+  if param < -0.01 then
+    return ("L < "..math.abs(util.round(param * 100, 1)))
+  elseif param > 0.01 then
+    return (math.abs(util.round(param * 100, 1)).." > R")
+  else
+    return "> <"
+  end
+end
+
 local function add_nb_mxsynths_params()
-  params:add_group("nb_mxsynths_group", "mxsynths", 20)
+  params:add_group("nb_mxsynths_group", "mxsynths", 26)
   params:hide("nb_mxsynths_group")
 
   params:add_separator("nb_mxsynths_patches", "presets")
@@ -223,8 +238,8 @@ local function add_nb_mxsynths_params()
   params:add_control("nb_mxsynths_amp", "amp", controlspec.new(0, 1, "lin", 0, 0.8), function(param) return round_form(param:get() * 100, 1, "%") end)
   params:set_action("nb_mxsynths_amp", function(val) set_param('amp', val) end)
 
-  params:add_control("nb_mxsynths_pan", "pan", controlspec.new(-1, 1, "lin", 0, 0), function(param) return round_form(param:get() * 100, 1, "%") end)
-  params:set_action("nb_mxsynths_pan", function(val) set_param('spread', val) end)
+  params:add_control("nb_mxsynths_pan", "pan", controlspec.new(-1, 1, "lin", 0, 0), function(param) return pan_display(param:get()) end)
+  params:set_action("nb_mxsynths_pan", function(val) set_param('pan', val) end)
 
   params:add_control("nb_mxsynths_send_a", "send a", controlspec.new(0, 1, "lin", 0, 0), function(param) return round_form(param:get() * 100, 1, "%") end)
   params:set_action("nb_mxsynths_send_a", function(val) set_param('sendA', val) end)
@@ -258,6 +273,17 @@ local function add_nb_mxsynths_params()
 
   params:add_control("nb_mxsynths_release", "release", controlspec.new(0.01, 10, "exp", 0, 2.2), function(param) return (round_form(param:get(), 0.01, " s")) end)
   params:set_action("nb_mxsynths_release", function(val) set_param('release', val) end)
+
+  params:add_separator("nb_mxsynths_modmods", "modulation")
+
+  params:add_number("nb_mxsynths_pitchbend", "pitchbend", 1, 24, 7, function(param) return param:get().." st" end)
+  params:set_action("nb_mxsynths_pitchbend", function(val) set_param('bndAmt', val) end)
+
+  for i = 1, 4 do
+    params:add_control("nb_mxsynths_modmod"..i, "modmod "..i, controlspec.new(-1, 1, "lin", 0, 0), function(param) return round_form(param:get() * 100, 1, "%") end)
+    params:set_action("nb_mxsynths_modmod"..i, function(val) set_param('mod'..i..'Mod', val) end)
+  end
+
 end
 
 
@@ -270,7 +296,7 @@ function add_nb_mxsynths_player()
   function player:describe()
     return {
       name = "nb_mxsynths",
-      supports_bend = false,
+      supports_bend = true,
       supports_slew = false
     }
   end
@@ -298,19 +324,17 @@ function add_nb_mxsynths_player()
   end
 
   function player:modulate(val)
-    
+    set_param('modDepth', val)
   end
 
   function player:set_slew(s)
-    
   end
 
-  function player:pitch_bend(note, amount)
-  
+  function player:pitch_bend(note, val)
+    set_param('bndDepth', val)
   end
 
   function player:modulate_note(note, key, value)
-
   end
 
   function player:note_on(note, vel)
@@ -318,7 +342,6 @@ function add_nb_mxsynths_player()
     local slot = self.slot[note]
     if slot == nil then
       slot = self.alloc:get()
-      slot.count = 1
     end
     local voice = slot.id - 1 -- sc is zero indexed!
     slot.on_release = function()
