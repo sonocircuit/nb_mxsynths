@@ -383,7 +383,7 @@ NB_mxSynths {
 
 
 				SynthDef(\mx_mdapiano,{
-				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
+					arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
 					hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 					gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 					mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
@@ -396,20 +396,22 @@ NB_mxSynths {
 					mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
 					mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
 
-					hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps; // cant set hz post gen in mdapiano
+					// hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps; // cant set hz post gen in mdapiano
 
 					env = EnvGen.ar(Env.adsr(0.01, 0, 1.0, release), gate, doneAction: 2);
 					snd = MdaPiano.ar(
 						freq: hz,
 						gate: gate,
-						decay: 1,
+						decay: 1.02,
 						velmuff: vel,
 						release: release,
 						stereo: LinLin.kr(mod2, -1, 1, 0.3, 1),
 						vel: vel.linlin(0, 1, 0, 110) + Rand(0, 10),
-						tune: 0.5 + (Rand(-0.2, 0.2) * LinLin.kr(mod1, -1, 1, 0, 1)),
+						tune: 0.5 + ((Rand(-0.2, 0.2) * LinLin.kr(mod1, -1, 1, 0, 1))),
 						random: 0
 					);
+
+					snd = LPF.ar(snd, ((980 * env) + 60).clip(60, 16000)); // keep it mellow
 
 					snd = Vibrato.ar(
 						snd,
