@@ -1,7 +1,7 @@
 # nb_mxsynths
 mx synths as an nb voice
 
-this is more or less port of infinitedigits' mx.synths with the following changes:
+this is more or less port of infinitedigits' mx.synths (thanks zack!) with the following changes:
 
 added:
 - save and load presets
