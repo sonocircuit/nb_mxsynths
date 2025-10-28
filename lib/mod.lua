@@ -24,17 +24,27 @@ local p = {
   attack = 0.01, decay = 0.6, sustain = 0.4, release = 2.2
 }
 
-local function round_form(param, quant, form)
-  return(util.round(param, quant)..form)
+
+---------------- osc msgs ----------------
+
+local function init_nb_mxsynths()
+  --osc.send({ "localhost", 57120 }, "/nb_mxsynths/init")
+end
+
+local function free_nb_mxsynths()
+  --osc.send({ "localhost", 57120 }, "/nb_mxsynths/free")
 end
 
 local function dont_panic()
-  osc.send({ "localhost", 57120 }, "/nb_mxsynths/panic", {})
+  osc.send({ "localhost", 57120 }, "/nb_mxsynths/panic")
 end
 
 local function set_param(key, val)
   osc.send({ "localhost", 57120 }, "/nb_mxsynths/set_param", {key, val})
 end
+
+
+---------------- functions ----------------
 
 local function save_synth_patch(txt)
   if txt then
@@ -45,7 +55,7 @@ local function save_synth_patch(txt)
     tab.save(patch, preset_path.."/"..txt..".patch")
     current_patch = txt
     params:set("nb_mxsynths_load_patch", preset_path.."/"..txt..".patch", true)
-    print("saved mxsynth: "..txt)
+    print("saved mxsynths patch: "..txt)
   end
 end
 
@@ -60,7 +70,7 @@ local function load_synth_patch(path)
         end
         local name = path:match("[^/]*$")
         current_patch = name:gsub(".patch", "")
-        print("loaded mxsynth: "..current_patch)
+        print("loaded mxsynths patch: "..current_patch)
       else
         if util.file_exists(failsafe_patch) then
           load_synth_patch(failsafe_patch)
@@ -70,6 +80,20 @@ local function load_synth_patch(path)
     else
       print("error: not a mxsynths patch file")
     end
+  end
+end
+
+local function round_form(param, quant, form)
+  return(util.round(param, quant)..form)
+end
+
+local function pan_display(param)
+  if param < -0.01 then
+    return ("L < "..math.abs(util.round(param * 100, 1)))
+  elseif param > 0.01 then
+    return (math.abs(util.round(param * 100, 1)).." > R")
+  else
+    return "> <"
   end
 end
 
@@ -212,16 +236,6 @@ local function set_modparams(idx)
   _menu.rebuild_params()
 end
 
-local function pan_display(param)
-  if param < -0.01 then
-    return ("L < "..math.abs(util.round(param * 100, 1)))
-  elseif param > 0.01 then
-    return (math.abs(util.round(param * 100, 1)).." > R")
-  else
-    return "> <"
-  end
-end
-
 local function add_nb_mxsynths_params()
   params:add_group("nb_mxsynths_group", "mxsynths", 26)
   params:hide("nb_mxsynths_group")
@@ -287,10 +301,14 @@ local function add_nb_mxsynths_params()
 end
 
 
+---------------- nb player ----------------
+
 function add_nb_mxsynths_player()
   local player = {
     alloc = vx.new(NUM_VOICES, 2),
-    slot = {}
+    slot = {},
+    is_active = false,
+    init_clk = nil
   }
 
   function player:describe()
@@ -309,6 +327,16 @@ function add_nb_mxsynths_player()
         params:hide("nb_mxsynths_send_b")
       end
       _menu.rebuild_params()
+      if self.init_clk ~= nil then
+        clock.cancel(self.init_clk)
+      end
+      self.init_clk = clock.run(function()
+        clock.sleep(0.2)
+        if not self.is_active then
+          --init_nb_mxsynths()
+          self.is_active = true
+        end
+      end)
     end
   end
 
@@ -316,6 +344,13 @@ function add_nb_mxsynths_player()
     if self.name ~= nil then
       params:hide("nb_mxsynths_group")
       _menu.rebuild_params()
+      if self.init_clk ~= nil then
+        clock.cancel(self.init_clk)
+      end
+      if self.is_active then
+        --free_nb_mxsynths()
+        self.is_active = false
+      end
     end
   end
 
@@ -370,6 +405,9 @@ function add_nb_mxsynths_player()
   note_players["mxsynths"] = player
 end
 
+
+---------------- mod zone ----------------
+
 local function post_system()
   if util.file_exists(preset_path) == false then
     util.make_dir(preset_path)
@@ -381,5 +419,10 @@ local function pre_init()
   add_nb_mxsynths_player()
 end
 
+local function cleanup()
+  --free_nb_mxsynths()
+end
+
 md.hook.register("system_post_startup", "nb_mxsynths post startup", post_system)
 md.hook.register("script_pre_init", "nb_mxsynths pre init", pre_init)
+md.hook.register("script_post_cleanup", "nb_mxsynths cleanup", cleanup)
