@@ -374,7 +374,7 @@ NB_mxSynths {
 					snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
 					snd = snd * (SinOsc.ar(lfoSpeed) * lfoDepth + 1);
 					snd = Pan2.ar(snd, Lag.kr(pan, 0.1));
-					snd = snd * env * amp * -12.dbamp;
+					snd = snd * env * amp * -14.dbamp;
 
 					Out.ar(out, snd);
 					Out.ar(sendABus, sendA * snd);
@@ -402,16 +402,14 @@ NB_mxSynths {
 					snd = MdaPiano.ar(
 						freq: hz,
 						gate: gate,
-						decay: 1.02,
-						velmuff: vel,
+						decay: 1.01,
 						release: release,
 						stereo: LinLin.kr(mod2, -1, 1, 0.3, 1),
 						vel: vel.linlin(0, 1, 0, 110) + Rand(0, 10),
-						tune: 0.5 + ((Rand(-0.2, 0.2) * LinLin.kr(mod1, -1, 1, 0, 1))),
-						random: 0
+						tune: 0.5 + ((Rand(-0.2, 0.2) * LinLin.kr(mod1, -1, 1, 0, 1)))
 					);
 
-					snd = LPF.ar(snd, ((980 * env) + 60).clip(60, 16000)); // keep it mellow
+					snd = LPF.ar(snd, 1200); // keep it mellow
 
 					snd = Vibrato.ar(
 						snd,
@@ -420,7 +418,7 @@ NB_mxSynths {
 					);
 
 					snd = Pan2.ar(snd, Lag.kr(pan, 0.1));
-					snd = snd * env * amp * vel * -12.dbamp;
+					snd = snd * env * amp * vel * -9.dbamp;
 
 					Out.ar(out, snd);
 					Out.ar(sendABus, sendA * snd);
@@ -461,7 +459,7 @@ NB_mxSynths {
 						LinExp.kr(mod3, -1, 1, 0.01, 16),
 						LinExp.kr(mod4, -1, 1, 0.01, 1));
 					snd = Balance2.ar(snd[0], snd[1], Lag.kr(pan, 0.1));
-					snd = snd * env * amp * vel * 2.dbamp;
+					snd = snd * env * amp * vel * 3.dbamp;
 
 					Out.ar(out, snd);
 					Out.ar(sendABus, sendA * snd);
@@ -592,7 +590,7 @@ NB_mxSynths {
 					snd = Vibrato.ar(snd, vibrato_rate, vibrato_depth);
 					snd = Decimator.ar(snd, decimation_rate, decimation_bits);
 					snd = Pan2.ar(snd, Lag.kr(pan, 0.1));
-					snd = snd * env * amp * vel * -12.dbamp;
+					snd = snd * env * amp * vel * -10.dbamp;
 
 					Out.ar(out, snd);
 					Out.ar(sendABus, sendA * snd);
@@ -600,42 +598,63 @@ NB_mxSynths {
 				}).add;
 
 
-				OSCFunc.new({ |msg, time, addr, recvPort|
+				OSCFunc.new({ |msg|
 					var synDef = msg[1].asSymbol;
-					var i = msg[2].asInteger;
+					var vox = msg[2].asInteger;
 					var hz = msg[3].asFloat;
 					var vel = msg[4].asFloat;
-					synthVoices[i].set(\gate, -1.05);
-					Synth.new(synDef,
-						[
+					if (synthVoices[vox].notNil) {
+						synthVoices[vox].set(\gate, -1.05);
+						Synth.new(synDef,
+							[
 							\hz, hz,
 							\vel, vel,
-							\sendABus, ~sendA ? Server.default.outputBus,
-							\sendBBus, ~sendB ? Server.default.outputBus,
-					    ] ++ synthParams.getPairs, target: synthVoices[i]
-                    );
+							\sendABus, ~sendA ? s.outputBus,
+							\sendBBus, ~sendB ? s.outputBus
+							] ++ synthParams.getPairs, target: synthVoices[vox]
+						);
+					};
 				}, "/nb_mxsynths/note_on");
 
-				OSCFunc.new({ |msg, time, addr, recvPort|
-					var i = msg[1].asInteger;
-					synthVoices[i].set(\gate, 0);
+				OSCFunc.new({ |msg|
+					var vox = msg[1].asInteger;
+					if (synthVoices[vox].notNil) {
+						synthVoices[vox].set(\gate, 0)
+					};
 				}, "/nb_mxsynths/note_off");
 
-				OSCFunc.new({ |msg, time, addr, recvPort|
+				OSCFunc.new({ |msg|
 					var key = msg[1].asSymbol;
 					var val = msg[2].asFloat;
-					numVoices.do({ arg i;
-						synthVoices[i].set(key, val);
-					});
+					if (synthGroup.notNil) {
+						synthGroup.set(key, val);
+					};
 					synthParams[key] = val;
 				}, "/nb_mxsynths/set_param");
 
-				OSCFunc.new({ |msg, time, addr, recvPort|
-					synthGroup.set(\gate, -1.05);
+				OSCFunc.new({ |msg|
+					if (synthGroup.notNil) {
+						synthGroup.set(\gate, -1.05);
+					}
 				}, "/nb_mxsynths/panic");
 
-				OSCFunc.new({ |msg, time, addr, recvPort|
-					synthGroup.free;
+				OSCFunc.new({ |msg|
+					if (synthGroup.isNil) {
+						synthGroup = Group.new(s);
+						synthVoices = Array.fill(numVoices, {Group.new(synthGroup)});
+						"nb mxsynths added".postln;
+					};
+				}, "/nb_mxsynths/init");
+
+				OSCFunc.new({ |msg|
+					if (synthGroup.notNil) {
+						synthGroup.free;
+						synthGroup = nil;
+						numVoices.do({ arg vox;
+							synthVoices[vox] = nil
+						});
+						"nb polyform removed".postln;
+					};
 				}, "/nb_mxsynths/free");
 
 			}
