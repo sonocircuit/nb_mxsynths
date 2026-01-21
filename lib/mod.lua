@@ -1,4 +1,4 @@
--- mxsynths lite - nb edition v0.1 @sonoCircuit
+-- mx synths lite - nb edition v1.0 @sonoCircuit
 -- big thanks to @infinitedigits for mx synths!
 
 local tx = require 'textentry'
@@ -15,24 +15,23 @@ local NUM_VOICES = 6
 
 local synthmodels = {"synthy", "icarus", "casio", "malone", "toshiya", "piano", "epiano", "mdapiano", "kalimba", "triangles", "aaaaaa"}
 local synthdef = "mx_synthy"
+local is_active = false
 
-local p = {
-  amp = 0.8, pan = 0, send_a = 0, send_b = 0,
-  model = "mx_synthy", sub = 0, pitchbend = 7,
-  mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0,
-  modmod1 = 0, modmod2 = 0, modmod3 = 0, modmod4 = 0,
-  attack = 0.01, decay = 0.6, sustain = 0.4, release = 2.2
+local paramlist = {
+  "amp", "pan", "send_a", "send_b",
+  "model", "sub", "pitchbend", "mod1", "mod2", "mod3", "mod4",
+  "modmod1", "modmod2", "modmod3", "modmod4", "attack", "decay", "sustain", "release"
 }
 
 
----------------- osc msgs ----------------
+--------------------------- osc msgs ---------------------------
 
 local function init_nb_mxsynths()
-  --osc.send({ "localhost", 57120 }, "/nb_mxsynths/init")
+  osc.send({ "localhost", 57120 }, "/nb_mxsynths/init")
 end
 
 local function free_nb_mxsynths()
-  --osc.send({ "localhost", 57120 }, "/nb_mxsynths/free")
+  osc.send({ "localhost", 57120 }, "/nb_mxsynths/free")
 end
 
 local function dont_panic()
@@ -44,44 +43,7 @@ local function set_param(key, val)
 end
 
 
----------------- functions ----------------
-
-local function save_synth_patch(txt)
-  if txt then
-    local patch = {}
-    for k, v in pairs(p) do
-      patch[k] = params:get("nb_mxsynths_"..k)
-    end
-    tab.save(patch, preset_path.."/"..txt..".patch")
-    current_patch = txt
-    params:set("nb_mxsynths_load_patch", preset_path.."/"..txt..".patch", true)
-    print("saved mxsynths patch: "..txt)
-  end
-end
-
-local function load_synth_patch(path)
-  if path ~= "cancel" and path ~= "" then
-    dont_panic()
-    if path:match("^.+(%..+)$") == ".patch" then
-      local patch = tab.load(path)
-      if patch ~= nil then
-        for k, v in pairs(patch) do
-          params:set("nb_mxsynths_"..k, v)
-        end
-        local name = path:match("[^/]*$")
-        current_patch = name:gsub(".patch", "")
-        print("loaded mxsynths patch: "..current_patch)
-      else
-        if util.file_exists(failsafe_patch) then
-          load_synth_patch(failsafe_patch)
-        end
-        print("error: could not find patch", path)
-      end
-    else
-      print("error: not a mxsynths patch file")
-    end
-  end
-end
+--------------------------- utils ---------------------------
 
 local function round_form(param, quant, form)
   return(util.round(param, quant)..form)
@@ -96,6 +58,51 @@ local function pan_display(param)
     return "> <"
   end
 end
+
+
+--------------------------- save and load ---------------------------
+
+local function save_synth_patch(txt)
+  if txt then
+    local patch = {}
+    for _, v in pairs(paramlist) do
+      patch[v] = params:get("nb_mxsynths_"..v)
+    end
+    tab.save(patch, preset_path.."/"..txt..".patch")
+    current_patch = txt
+    params:set("nb_mxsynths_load_patch", preset_path.."/"..txt..".patch", true)
+    print("saved mxsynths patch: "..txt)
+  end
+end
+
+local function load_synth_patch(path)
+  if is_active then
+    if path ~= "cancel" and path ~= "" then
+      dont_panic()
+      if path:match("^.+(%..+)$") == ".patch" then
+        local patch = tab.load(path)
+        if patch ~= nil then
+          for k, v in pairs(patch) do
+            params:set("nb_mxsynths_"..k, v)
+          end
+          local name = path:match("[^/]*$")
+          current_patch = name:gsub(".patch", "")
+          print("loaded mxsynths patch: "..current_patch)
+        else
+          if util.file_exists(failsafe_patch) then
+            load_synth_patch(failsafe_patch)
+          end
+          print("error: could not find patch", path)
+        end
+      else
+        print("error: not a mxsynths patch file")
+      end
+    end
+  end
+end
+
+
+--------------------------- params ---------------------------
 
 local modparams = {  
   synthy = {
@@ -236,7 +243,7 @@ local function set_modparams(idx)
   _menu.rebuild_params()
 end
 
-local function add_nb_mxsynths_params()
+local function add_params()
   params:add_group("nb_mxsynths_group", "mxsynths", 26)
   params:hide("nb_mxsynths_group")
 
@@ -300,15 +307,13 @@ local function add_nb_mxsynths_params()
 
 end
 
-
----------------- nb player ----------------
+--------------------------- nb player ---------------------------
 
 function add_nb_mxsynths_player()
   local player = {
     alloc = vx.new(NUM_VOICES, 2),
     slot = {},
-    is_active = false,
-    init_clk = nil
+    clk = nil
   }
 
   function player:describe()
@@ -321,20 +326,20 @@ function add_nb_mxsynths_player()
   
   function player:active()
     if self.name ~= nil then
-      params:show("nb_mxsynths_group")
-      if md.is_loaded("fx") == false then
-        params:hide("nb_mxsynths_send_a")
-        params:hide("nb_mxsynths_send_b")
+      if self.clk ~= nil then
+        clock.cancel(self.clk)
       end
-      _menu.rebuild_params()
-      if self.init_clk ~= nil then
-        clock.cancel(self.init_clk)
-      end
-      self.init_clk = clock.run(function()
-        clock.sleep(0.2)
-        if not self.is_active then
-          --init_nb_mxsynths()
-          self.is_active = true
+      self.clk = clock.run(function()
+        clock.sleep(0.4)
+        if not is_active then
+          is_active = true
+          params:lookup_param("nb_mxsynths_load_patch"):bang()
+          params:show("nb_mxsynths_group")
+          if md.is_loaded("fx") == false then
+            params:hide("nb_mxsynths_send_a")
+            params:hide("nb_mxsynths_send_b")
+          end
+          _menu.rebuild_params()
         end
       end)
     end
@@ -342,15 +347,18 @@ function add_nb_mxsynths_player()
 
   function player:inactive()
     if self.name ~= nil then
-      params:hide("nb_mxsynths_group")
-      _menu.rebuild_params()
-      if self.init_clk ~= nil then
-        clock.cancel(self.init_clk)
+      if self.clk ~= nil then
+        clock.cancel(self.clk)
       end
-      if self.is_active then
-        --free_nb_mxsynths()
-        self.is_active = false
-      end
+      self.clk = clock.run(function()
+        clock.sleep(0.4)
+        if is_active then
+          is_active = false
+          dont_panic()
+          params:hide("nb_mxsynths_group")
+          _menu.rebuild_params()
+        end
+      end)
     end
   end
 
@@ -395,7 +403,7 @@ function add_nb_mxsynths_player()
   end
 
   function player:add_params()
-    add_nb_mxsynths_params()
+    add_params()
   end
 
   if note_players == nil then
@@ -406,7 +414,7 @@ function add_nb_mxsynths_player()
 end
 
 
----------------- mod zone ----------------
+--------------------------- mod zone ---------------------------
 
 local function post_system()
   if util.file_exists(preset_path) == false then
@@ -416,13 +424,9 @@ local function post_system()
 end
 
 local function pre_init()
+  init_nb_mxsynths()
   add_nb_mxsynths_player()
-end
-
-local function cleanup()
-  --free_nb_mxsynths()
 end
 
 md.hook.register("system_post_startup", "nb_mxsynths post startup", post_system)
 md.hook.register("script_pre_init", "nb_mxsynths pre init", pre_init)
-md.hook.register("script_post_cleanup", "nb_mxsynths cleanup", cleanup)
