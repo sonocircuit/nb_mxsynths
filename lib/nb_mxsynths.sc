@@ -8,7 +8,7 @@ NB_mxSynths {
 	*addPlayer {
 		if (synthGroup.isNil) {
 
-			synthGroup = ParGroup.new(Server.default);
+			synthGroup = Group.new(Server.default);
 
 			SynthDef(\mx_synthy, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
