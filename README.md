@@ -14,5 +14,3 @@ removed:
 - portamento
 - polyperc (already exists as separate nb voice)
 - internal fx bus
-  
-_NOTE: this is still under development. synthdef tweaks will be made._
