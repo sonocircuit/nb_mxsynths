@@ -330,7 +330,7 @@ function add_nb_mxsynths_player()
         clock.cancel(self.clk)
       end
       self.clk = clock.run(function()
-        clock.sleep(0.4)
+        clock.sleep(0.2)
         if not is_active then
           is_active = true
           params:lookup_param("nb_mxsynths_load_patch"):bang()
@@ -351,7 +351,7 @@ function add_nb_mxsynths_player()
         clock.cancel(self.clk)
       end
       self.clk = clock.run(function()
-        clock.sleep(0.4)
+        clock.sleep(0.2)
         if is_active then
           is_active = false
           dont_panic()
