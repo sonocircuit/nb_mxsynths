@@ -20,7 +20,8 @@ local is_active = false
 local paramlist = {
   "amp", "pan", "send_a", "send_b",
   "model", "sub", "pitchbend", "mod1", "mod2", "mod3", "mod4",
-  "modmod1", "modmod2", "modmod3", "modmod4", "attack", "decay", "sustain", "release"
+  "modmod1", "modmod2", "modmod3", "modmod4", "send_a_mod", "send_b_mod",
+  "attack", "decay", "sustain", "release"
 }
 
 
@@ -244,7 +245,7 @@ local function set_modparams(idx)
 end
 
 local function add_params()
-  params:add_group("nb_mxsynths_group", "mxsynths", 26)
+  params:add_group("nb_mxsynths_group", "mxsynths", 29)
   params:hide("nb_mxsynths_group")
 
   params:add_separator("nb_mxsynths_patches", "presets")
@@ -281,6 +282,9 @@ local function add_params()
     params:set_action("nb_mxsynths_mod"..i, function(val) set_param('mod'..i, val) end)
   end
 
+  params:add_number("nb_mxsynths_pitchbend", "pitchbend", 1, 24, 7, function(param) return param:get().." st" end)
+  params:set_action("nb_mxsynths_pitchbend", function(val) set_param('bndAmt', val) end)
+
   params:add_separator("nb_mxsynths_env", "envelope")
 
   params:add_control("nb_mxsynths_attack", "attack", controlspec.new(0.001, 10, "exp", 0, 0.001), function(param) return (round_form(param:get(), 0.01, " s")) end)
@@ -297,13 +301,20 @@ local function add_params()
 
   params:add_separator("nb_mxsynths_modmods", "modulation")
 
-  params:add_number("nb_mxsynths_pitchbend", "pitchbend", 1, 24, 7, function(param) return param:get().." st" end)
-  params:set_action("nb_mxsynths_pitchbend", function(val) set_param('bndAmt', val) end)
+  params:add_control("nb_mxsynths_mod_amt", "mod amt [map me]", controlspec.new(0, 1, "lin", 0, 0), function(param) return round_form(param:get() * 100, 1, "%") end)
+  params:set_action("nb_mxsynths_mod_amt", function(val) set_param('modDepth', val) end)
+  params:set_save("nb_mxsynths_mod_amt", false)
 
   for i = 1, 4 do
-    params:add_control("nb_mxsynths_modmod"..i, "modmod "..i, controlspec.new(-1, 1, "lin", 0, 0), function(param) return round_form(param:get() * 100, 1, "%") end)
+    params:add_control("nb_mxsynths_modmod"..i, "modmod "..i, controlspec.new(-1, 1, "lin", 0, 0, "", 1/200), function(param) return round_form(param:get() * 100, 1, "%") end)
     params:set_action("nb_mxsynths_modmod"..i, function(val) set_param('mod'..i..'Mod', val) end)
   end
+
+  params:add_control("nb_mxsynths_send_a_mod", "send a", controlspec.new(-1, 1, "lin", 0, 0, "", 1/200), function(param) return round_form(param:get() * 100, 1, "%") end)
+  params:set_action("nb_mxsynths_send_a_mod", function(val) set_param('sendAMod', val) end)
+  
+  params:add_control("nb_mxsynths_send_b_mod", "send b", controlspec.new(-1, 1, "lin", 0, 0, "", 1/200), function(param) return round_form(param:get() * 100, 1, "%") end)
+  params:set_action("nb_mxsynths_send_b_mod", function(val) set_param('sendBMod', val) end)
 
 end
 
@@ -338,6 +349,8 @@ function add_nb_mxsynths_player()
           if md.is_loaded("fx") == false then
             params:hide("nb_mxsynths_send_a")
             params:hide("nb_mxsynths_send_b")
+            params:hide("nb_mxsynths_send_a_mod")
+            params:hide("nb_mxsynths_send_b_mod")
           end
           _menu.rebuild_params()
         end
@@ -367,7 +380,7 @@ function add_nb_mxsynths_player()
   end
 
   function player:modulate(val)
-    set_param('modDepth', val)
+    params:set("nb_mxsynths_mod_amt", val)
   end
 
   function player:set_slew(s)
