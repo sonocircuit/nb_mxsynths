@@ -15,14 +15,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
-
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
+				
 				var env, stereo, lowcut, res, detune, snd;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -56,15 +59,18 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var bass, basshz, feedback = 0.5, delaytime = 0.25;
 				var ender, snd, local, in, ampcheck, env, detuning = 0.1, pwmcenter = 0.5, pwmwidth = 0.4, pwmfreq = 1.5;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -124,14 +130,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var env, artifacts, phasing, res, detuning, fq, fqRes, pdbase, pd, pdres, pdi, snd;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -164,14 +173,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var snd, env, basshz, bass, detuning, pw, res, filt, detuningSpeed;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -219,14 +231,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var env, detune, klankyvol, lowcut, chorus, snd;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -267,17 +282,20 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var snd, note, env;
 				var noise, string, delaytime, lpf, noise_env, damp_mul;
 				var noise_hz, tune_up, tune_down, string_decay, lpf_rq,
 				damp = 0, lpf_ratio = 2.0, hpf_hz = 40, damp_time = 0.1;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(0.01, 0, 1, release), gate, doneAction: 2);
@@ -314,14 +332,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var env, mix, modIndex, lfoSpeed, lfoDepth, env1, env2, env3, osc1, osc2, osc3, osc4, snd;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -356,14 +377,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var env, snd;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				env = EnvGen.ar(Env.adsr(0.01, 0, 1.0, release), gate, doneAction: 2);
 				snd = MdaPiano.ar(
@@ -399,14 +423,17 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var env, osc, click, mix, snd;
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.perc(attack, decay), gate, doneAction: 2);
@@ -439,7 +466,7 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var saw, wiggle, snd, env;
 				// frequencies drawn from https://slideplayer.com/slide/15020921/
@@ -467,6 +494,9 @@ NB_mxSynths {
 				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
 				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
 				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				voice = Select.kr( (mod1 > -0.99), [hz.explin(100, 1000, 0, 2), LinLin.kr(mod1, -1, 1, 0, 2)]);
 				vowel = LinLin.kr(mod2, -1, 1, 0, 7);
@@ -519,7 +549,7 @@ NB_mxSynths {
 				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
-				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0;
+				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
 
 				var snd, env, bellow_env, bellow,
 				detune_cents, detune_semitones,
@@ -529,10 +559,13 @@ NB_mxSynths {
 				hz = (hz.cpsmidi + Lag.kr(bndAmt * bndDepth)).midicps;
 				env = EnvGen.ar(Env.adsr(attack + 0.05, decay, sustain, release), gate, doneAction: 2);
 
-				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
-				mod2 = Lag3.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
-				mod3 = Lag3.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
-				mod4 = Lag3.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
+				mod2 = Lag.kr(mod2 + (mod2Mod * modDepth)).clip(-1, 1);
+				mod3 = Lag.kr(mod3 + (mod3Mod * modDepth)).clip(-1, 1);
+				mod4 = Lag.kr(mod4 + (mod4Mod * modDepth)).clip(-1, 1);
+
+				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
+				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
 				bellow = LinLin.kr(mod1, -1, 1, 0, 1);
 				decimation_bits = LinLin.kr(mod2, -1, 1, 24, 4);
@@ -593,6 +626,8 @@ NB_mxSynths {
 				\mod2Mod, 0,
 				\mod3Mod, 0,
 				\mod4Mod, 0,
+				\sendAMod, 0,
+				\sendBMod, 0,
 				\modDepth, 0,
 				\bndAmt, 0,
 				\bndDepth, 0
