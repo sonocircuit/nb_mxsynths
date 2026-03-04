@@ -11,6 +11,5 @@ added:
 - 6 voice limit
 
 removed:
-- portamento
 - polyperc (already exists as separate nb voice)
 - internal fx bus
