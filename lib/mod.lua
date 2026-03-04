@@ -40,7 +40,7 @@ local function dont_panic()
 end
 
 local function note_on(voice, freq, vel)
-    osc.send({ "localhost", 57120 }, "/nb_mxsynths/note_on", {voice, freq, vel})
+    osc.send({ "localhost", 57120 }, "/nb_mxsynths/note_on", {synthdef, voice, freq, vel})
 end
 
 local function note_off(voice)
@@ -79,7 +79,7 @@ local function save_synth_patch(txt)
     end
     tab.save(patch, preset_path.."/"..txt..".mxp")
     current_patch = txt
-    print("saved mxsynth: "..txt)
+    print("saved mxsynths: "..txt)
   end
 end
 
@@ -94,7 +94,7 @@ local function load_synth_patch(path)
         end
         local name = path:match("[^/]*$")
         current_patch = name:gsub(".mxp", "")
-        print("loaded mxsynth: "..current_patch)
+        print("loaded mxsynths: "..current_patch)
       else
         print("error: mxsynths patch not found", path)
       end
