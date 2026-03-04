@@ -1,4 +1,4 @@
-// mx synths - nb editon v.1.0 @sonoCircuit
+// mx synths - nb editon v.1.1 @sonoCircuit
 // synthdefs ported and adapted from mx_synths @infinitedigits
 
 NB_mxSynths {
@@ -12,7 +12,8 @@ NB_mxSynths {
 
 			SynthDef(\mx_synthy, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -27,7 +28,9 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
+
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
 				stereo = LinLin.kr(mod1, -1, 1, 0, 1);
@@ -54,9 +57,10 @@ NB_mxSynths {
 			}).add;
 
 
-			SynthDef(\mx_icarus,{
+			SynthDef(\mx_icarus, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -72,7 +76,8 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
 				feedback = LinLin.kr(mod1, -1, 1, 0.1, 2);
@@ -127,7 +132,8 @@ NB_mxSynths {
 
 			SynthDef(\mx_casio, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -141,8 +147,9 @@ NB_mxSynths {
 
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
-
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
 				artifacts = LinLin.kr(mod1, -1, 1, 1, 10);
@@ -168,9 +175,10 @@ NB_mxSynths {
 			}).add;
 
 
-			SynthDef(\mx_malone,{
+			SynthDef(\mx_malone, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -185,7 +193,8 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
 				detuningSpeed = LinExp.kr(mod1, -1, 1, 0.1, 10);
@@ -226,9 +235,10 @@ NB_mxSynths {
 			}).add;
 
 
-			SynthDef(\mx_toshiya,{
+			SynthDef(\mx_toshiya, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -243,7 +253,8 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
 				detune = LinExp.kr(Lag.kr(mod1 + (mod1Mod * modDepth)), -1, 1, 0.001, 0.1);
@@ -277,9 +288,10 @@ NB_mxSynths {
 
 
 			// https://github.com/catfact/zebra/blob/master/lib/Engine_DreadMoon.sc#L20-L41
-			SynthDef(\mx_piano,{
+			SynthDef(\mx_piano, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -297,7 +309,8 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(0.01, 0, 1, release), gate, doneAction: 2);
 
 				string_decay = LinLin.kr(mod1, -1, 1, 0.2, 8);
@@ -329,7 +342,8 @@ NB_mxSynths {
 			// port of STK's Rhodey (yamaha DX7-style Fender Rhodes) https://sccode.org/1-522
 			SynthDef(\mx_epiano, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -344,7 +358,8 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
 				mix = LinLin.kr(mod1, -1, 1, 0.0, 0.4);
@@ -372,9 +387,10 @@ NB_mxSynths {
 			}).add;
 
 
-			SynthDef(\mx_mdapiano,{
+			SynthDef(\mx_mdapiano, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -418,9 +434,10 @@ NB_mxSynths {
 
 
 			// http://sccode.org/1-51n
-			SynthDef(\mx_kalimba,{
+			SynthDef(\mx_kalimba, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -435,7 +452,8 @@ NB_mxSynths {
 				sendA = Lag.kr(sendA + (sendAMod * modDepth)).clip(0, 1);
 				sendB = Lag.kr(sendB + (sendBMod * modDepth)).clip(0, 1);
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.perc(attack, decay), gate, doneAction: 2);
 
 				osc = HPF.ar(LPF.ar(DPW3Tri.ar(hz).tanh, 380), 60);
@@ -461,9 +479,10 @@ NB_mxSynths {
 			}).add;
 
 
-			SynthDef(\mx_aaaaaa,{
+			SynthDef(\mx_aaaaaa, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -487,7 +506,8 @@ NB_mxSynths {
 				var q1, q2, q3, q4;
 				var voice, vowel, tilt, cons, detune, focus, div, reso;
 
-				hz = (hz.cpsmidi + Lag3.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack,decay,sustain,release), gate, doneAction: 2);
 
 				mod1 = Lag3.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
@@ -544,9 +564,10 @@ NB_mxSynths {
 			}).add;
 
 
-			SynthDef(\mx_triangles,{
+			SynthDef(\mx_triangles, {
 				arg out = 0, sendABus = 0, sendBBus = 0, sendA = 0, sendB = 0,
-				hz = 220, bndAmt = 7, bndDepth = 0, amp = 1.0, vel = 1.0, pan = 0, sub = 0,
+				hz = 220, lastHz = 220, glide = 0, bndAmt = 7, bndDepth = 0,
+				amp = 1.0, vel = 1.0, pan = 0, sub = 0,
 				gate = 1, attack = 0.01, decay = 0.2, sustain = 0.9, release = 5,
 				mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, modDepth = 0,
 				mod1Mod = 0, mod2Mod = 0, mod3Mod = 0, mod4Mod = 0, sendAMod = 0, sendBMod = 0;
@@ -609,6 +630,8 @@ NB_mxSynths {
 		StartUp.add {
 
 			synthParams = Dictionary.newFrom([
+				\lastHz, 110,
+				\glide, 0,
 				\amp, 0.8,
 				\pan, 0,
 				\sendA, 0,
@@ -659,6 +682,7 @@ NB_mxSynths {
 				);
 				synthVoices[vox] = syn;
 				syn.onFree({ if (synthVoices[vox] === syn) {synthVoices[vox] = nil} });
+				synthParams[\lastHz] = hz;
 			}, "/nb_mxsynths/note_on");
 
 			OSCFunc.new({ |msg|
