@@ -1,0 +1,24 @@
+return {
+-- Table: {1}
+{
+   ["modmod4"]=-0.1,
+   ["send_b"]=0,
+   ["modmod1"]=0.4,
+   ["mod4"]=-0.8,
+   ["modmod2"]=0.5,
+   ["decay"]=2.2,
+   ["modmod3"]=0.2,
+   ["release"]=2.2,
+   ["mod3"]=-0.36,
+   ["amp"]=0.8,
+   ["send_a"]=0,
+   ["sustain"]=0.5,
+   ["model"]=6,
+   ["mod1"]=-0.129,
+   ["pan"]=-8.8817841970013e-16,
+   ["pitchbend"]=1,
+   ["mod2"]=0.421,
+   ["sub"]=0,
+   ["attack"]=0.001,
+},
+}
