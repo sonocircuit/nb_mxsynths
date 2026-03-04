@@ -577,7 +577,8 @@ NB_mxSynths {
 				f_cents, freq_a, freq_b, decimation_bits, decimation_rate,
 				noise_level, vibrato_rate, vibrato_depth;
 
-				hz = (hz.cpsmidi + Lag.kr(bndAmt * bndDepth)).midicps;
+				hz = XLine.kr(lastHz, hz, glide);
+				hz = (hz * (bndAmt * bndDepth).midiratio).clip(20, 20000);
 				env = EnvGen.ar(Env.adsr(attack + 0.05, decay, sustain, release), gate, doneAction: 2);
 
 				mod1 = Lag.kr(mod1 + (mod1Mod * modDepth)).clip(-1, 1);
