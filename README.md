@@ -1,5 +1,5 @@
 # nb_mxsynths
-mx synths as an nb voice
+mx synths as an nb player
 
 this is more or less port of infinitedigits' mx.synths (thanks zack!) with the following changes:
 
